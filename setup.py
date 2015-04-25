@@ -2,6 +2,13 @@ from setuptools import setup
 
 setup(
     name='nose-terse-output',
+    version='0.0.1',
+    description='Terse output from your nose tests',
+    long_description=open('README.rst').read(),
+    url='https://github.com/joakimkarlsson/nose-terse-output',
+    author='Joakim Karlsson',
+    author_email='joakim@jkarlsson.com',
+
     py_modules='terseout',
 
     install_requires=[
