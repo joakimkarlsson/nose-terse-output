@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from setuptools import setup
 
 setup(
@@ -9,7 +10,7 @@ setup(
     author='Joakim Karlsson',
     author_email='joakim@jkarlsson.com',
 
-    py_modules='terseout',
+    py_modules=['terseout'],
 
     install_requires=[
         'nose>=1.3.6'
