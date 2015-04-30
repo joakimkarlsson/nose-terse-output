@@ -30,11 +30,16 @@ class TerseOutPlugin(Plugin):
     def _report(self, err_or_failure, test, err):
         error_type, error, tb = err
         file_, line, *_ = self._first_local_stackframe(tb)
-        self.stream.writeln('{}:{}: {} {}'.format(
-            file_, line, test, str(error) or repr(error)))
+
+        message = self._strip_newlines(error)
+        self.stream.writeln('{}:{}: {}'.format(file_, line, message))
 
         if self.print_stack:
             self.stream.writeln(self._format_tb(tb))
+
+    def _strip_newlines(self, error):
+        message = str(error) or repr(error)
+        return re.sub(r'[\r\n]+', ' ', message)
 
     def _format_tb(self, tb):
         frames = traceback.extract_tb(tb)
