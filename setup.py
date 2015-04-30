@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='nose-terse-output',
-    version='0.0.1',
+    version='1.0.0',
     description='Terse output from your nose tests',
     long_description=open('README.rst').read(),
     url='https://github.com/joakimkarlsson/nose-terse-output',
@@ -19,5 +19,7 @@ setup(
         'nose.plugins.0.10': [
             'terseout = terseout:TerseOutPlugin'
         ]
-    }
+    },
+
+    keywords=['unit testing', 'nose']
 )
