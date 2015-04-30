@@ -10,10 +10,10 @@ class TerseOutPlugin(Plugin):
     def __init__(self):
         self.stream = None
         self.basepath = os.getcwd()
-        super().__init__()
+        super(TerseOutPlugin, self).__init__()
 
     def options(self, parser, env):
-        super().options(parser, env)
+        super(TerseOutPlugin, self).options(parser, env)
         parser.add_option("--terse-stack", action="store_true",
                           default=False, help="Print stacktrace for errors")
         parser.add_option("--terse-ignore", action="append", default=None,
@@ -28,7 +28,7 @@ class TerseOutPlugin(Plugin):
         self.terse_stack = options.terse_stack
         self.terse_ignore = options.terse_ignore or ['python', 'venv']
         self.terse_outside_local = options.terse_outside_local
-        super().configure(options, conf)
+        super(TerseOutPlugin, self).configure(options, conf)
 
     def addError(self, test, err):
         self._report('error', test, err)
