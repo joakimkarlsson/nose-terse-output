@@ -14,11 +14,20 @@ class TerseOutPlugin(Plugin):
 
     def options(self, parser, env):
         super().options(parser, env)
-        parser.add_option("--print-stack", action="store_true",
+        parser.add_option("--terse-stack", action="store_true",
                           default=False, help="Print stacktrace for errors")
+        parser.add_option("--terse-ignore", action="append", default=None,
+                          help="Paths to ignore when finding stack frame to "
+                          "use as location for error.")
+        parser.add_option("--terse-outside-local", action="store_true",
+                          default=False, help="Consider stack frames for "
+                          "files outside of the current direcory for error "
+                          "location.")
 
     def configure(self, options, conf):
-        self.print_stack = options.print_stack
+        self.terse_stack = options.terse_stack
+        self.terse_ignore = options.terse_ignore or ['python', 'venv']
+        self.terse_outside_local = options.terse_outside_local
         super().configure(options, conf)
 
     def addError(self, test, err):
@@ -34,7 +43,7 @@ class TerseOutPlugin(Plugin):
         message = self._strip_newlines(error)
         self.stream.writeln('{}:{}: {}'.format(file_, line, message))
 
-        if self.print_stack:
+        if self.terse_stack:
             self.stream.writeln(self._format_tb(tb))
 
     def _strip_newlines(self, error):
@@ -54,8 +63,11 @@ class TerseOutPlugin(Plugin):
 
         def i_like_you(frame):
             path, *_ = frame
-            return (path.startswith(self.basepath) and
-                    not re.search(r'python|venv', path, flags=re.IGNORECASE))
+            so_far = path.startswith(self.basepath) or self.terse_outside_local
+            return so_far and not any(
+                [re.search(pat, path, flags=re.IGNORECASE)
+                 for pat in self.terse_ignore]
+            )
 
         local_frames = filter(i_like_you, reversed(frames))
         return next(local_frames, frames[-1])
