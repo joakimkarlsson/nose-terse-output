@@ -10,7 +10,7 @@ Nose's error messages are really hard for tools, like text editors, to parse in 
 
 .. code:: bash
 
-   <path>:<line> <error message>
+   <path>:<line>: <error message>
 
 That's a whole lot easier for a text editor to parse.
 
@@ -25,13 +25,13 @@ Default output from a failing test run:
 .. code:: bash
 
    $ nosetests --with-terseout
-   path/to/test.py:123 test name: 'foo' != 'bar'
+   path/to/test.py:123: test name: 'foo' != 'bar'
 
 To get a compact print out of the stack as well:
 
 .. code:: bash
 
-   $ nosetests --with-terseout --print-stack
+   $ nosetests --with-terseout --terse-stack
 
 
 To supply your own directories you'd like to ignore:
