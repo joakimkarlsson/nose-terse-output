@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='nose-terse-output',
-    version='1.0.1',
+    version='1.0.2',
     description='Terse output from your nose tests',
     long_description=open('README.rst').read(),
     url='https://github.com/joakimkarlsson/nose-terse-output',
