@@ -7,9 +7,13 @@ import re
 class TerseOutPlugin(Plugin):
     name = 'terseout'
 
-    def __init__(self):
+    def __init__(self, basepath=None):
         self.stream = None
-        self.basepath = os.getcwd()
+        self.basepath = basepath or os.getcwd()
+        self.terse_stack = False
+        self.terse_ignore = ['python', 'venv']
+        self.terse_outside_local = False
+
         super(TerseOutPlugin, self).__init__()
 
     def options(self, parser, env):
@@ -38,38 +42,33 @@ class TerseOutPlugin(Plugin):
 
     def _report(self, err_or_failure, test, err):
         error_type, error, tb = err
-        file_, line, *_ = self._first_local_stackframe(tb)
-
-        message = self._strip_newlines(error)
-        self.stream.writeln('{}:{}: {}'.format(file_, line, message))
+        frames = traceback.extract_tb(tb)
+        frame = self._first_local_stackframe(frames)
+        self._print_stack_frame(frame, error)
 
         if self.terse_stack:
-            self.stream.writeln(self._format_tb(tb))
+            self.stream.writeln(self._format_frames(frames))
 
     def _strip_newlines(self, error):
         message = str(error) or repr(error)
         return re.sub(r'[\r\n]+', ' ', message)
 
-    def _format_tb(self, tb):
-        frames = traceback.extract_tb(tb)
+    def _format_frames(self, frames):
         return os.linesep.join(
-            ['    {file_}:{line}: {func} {statement}'.format(
-                file_=file_, line=line, func=func, statement=statement)
+            ['    %s:%d: %s %s' % (file_, line, func, statement)
              for file_, line, func, statement in frames]
         )
 
-    def _first_local_stackframe(self, tb):
-        frames = traceback.extract_tb(tb)
-
+    def _first_local_stackframe(self, frames):
         def i_like_you(frame):
-            path, *_ = frame
+            path, _, _, _ = frame
             so_far = path.startswith(self.basepath) or self.terse_outside_local
             return so_far and not any(
                 [re.search(pat, path, flags=re.IGNORECASE)
                  for pat in self.terse_ignore]
             )
 
-        local_frames = filter(i_like_you, reversed(frames))
+        local_frames = iter(filter(i_like_you, reversed(frames)))
         return next(local_frames, frames[-1])
 
     def setOutputStream(self, stream):
@@ -85,3 +84,9 @@ class TerseOutPlugin(Plugin):
 
         self.stream = stream
         return NullStream()
+
+    def _print_stack_frame(self, frame, message):
+        file_, line, _, _ = frame
+        message = self._strip_newlines(message)
+
+        self.stream.writeln('%s:%d: %s' % (file_, line, message))
