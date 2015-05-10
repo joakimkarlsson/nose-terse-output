@@ -35,19 +35,31 @@ class TerseOutPlugin(Plugin):
         super(TerseOutPlugin, self).configure(options, conf)
 
     def addError(self, test, err):
-        self._report('error', test, err)
+        self.addFailure(test, err)
 
     def addFailure(self, test, err):
-        self._report('failure', test, err)
-
-    def _report(self, err_or_failure, test, err):
         error_type, error, tb = err
         frames = traceback.extract_tb(tb)
-        frame = self._first_local_stackframe(frames)
-        self._print_stack_frame(frame, error)
+        self._report(error_type, error, frames)
+
+    def _report(self, error_type, error, frames):
+        error_handlers = {
+            SyntaxError: self._report_syntax_error
+        }
+        reporter = error_handlers.get(error_type, self._report_from_stack)
+        reporter(error, frames)
 
         if self.terse_stack:
             self.stream.writeln(self._format_frames(frames))
+
+    def _report_syntax_error(self, error, frames):
+        self.stream.writeln(
+            '{}:{}: {}'.format(error.filename, error.lineno, error.msg)
+        )
+
+    def _report_from_stack(self, error, frames):
+        frame = self._first_local_stackframe(frames)
+        self._print_stack_frame(frame, error)
 
     def _strip_newlines(self, error):
         message = str(error) or repr(error)

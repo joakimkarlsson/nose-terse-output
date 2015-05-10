@@ -64,5 +64,14 @@ class TestReporting(unittest.TestCase):
             '    /somewhere/else/internal.py:432: funcname text'
         )
 
+    def test_syntax_errors_are_reported_directly(self):
+        err = SyntaxError('invalid syntax')
+        err.filename = '/offending/file.py'
+        err.lineno = 441
+
+        self.plug._report(SyntaxError, err, 'traceback here')
+
+        self.assert_stream('/offending/file.py:441: invalid syntax')
+
     def assert_stream(self, expected):
         self.assertEqual(self.stream.read(), expected)
